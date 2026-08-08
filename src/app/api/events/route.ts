@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureDatabaseSchema } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
+    await ensureDatabaseSchema();
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search")?.trim() || "";
     const username = searchParams.get("username")?.trim().replace(/^@+/, "");

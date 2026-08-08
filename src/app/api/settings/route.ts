@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureDatabaseSchema } from "@/lib/db";
 
 const DEFAULT_SETTINGS = {
   soundEnabled: true,
@@ -13,6 +13,7 @@ const DEFAULT_SETTINGS = {
 
 export async function GET() {
   try {
+    await ensureDatabaseSchema();
     const settingsRows = await db.appSetting.findMany();
     const config: Record<string, any> = { ...DEFAULT_SETTINGS };
 

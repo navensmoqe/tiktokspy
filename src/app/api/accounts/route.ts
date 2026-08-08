@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { db, ensureDatabaseSchema } from "@/lib/db";
 import { cleanUsername } from "@/lib/utils";
 import { logSystemEvent } from "@/lib/logger";
 
@@ -11,6 +11,7 @@ const createAccountSchema = z.object({
 
 export async function GET() {
   try {
+    await ensureDatabaseSchema();
     const accounts = await db.monitoredAccount.findMany({
       orderBy: { createdAt: "desc" },
       include: {

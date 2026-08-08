@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureDatabaseSchema } from "@/lib/db";
 
 export async function GET() {
   try {
+    await ensureDatabaseSchema();
     const notifications = await db.notification.findMany({
       orderBy: { createdAt: "desc" },
       take: 50,

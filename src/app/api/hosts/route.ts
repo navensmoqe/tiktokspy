@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { db, ensureDatabaseSchema } from "@/lib/db";
 import { cleanUsername } from "@/lib/utils";
 import { getMonitoringManager } from "@/services/monitoringManager";
 import { logSystemEvent } from "@/lib/logger";
@@ -12,6 +12,7 @@ const createHostSchema = z.object({
 
 export async function GET() {
   try {
+    await ensureDatabaseSchema();
     const hosts = await db.targetHost.findMany({
       orderBy: { createdAt: "desc" },
     });
