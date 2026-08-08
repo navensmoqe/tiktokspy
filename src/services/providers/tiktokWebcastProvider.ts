@@ -33,13 +33,11 @@ export class TiktokWebcastProvider implements LiveStreamProvider {
       const connection = new ConnectionClass(cleanHost, {
         processInitialData: true,
         enableExtendedGiftInfo: false,
-        enableWebsocketUpgrade: true,
-        requestPollingIntervalMs: 1000,
         clientParams: {
           app_language: "ar-SA",
           device_platform: "web",
         },
-      });
+      } as any);
 
       const wrapper: ConnectionWrapper = {
         connection,
@@ -85,27 +83,27 @@ export class TiktokWebcastProvider implements LiveStreamProvider {
       };
 
       // 1. Member join event (WebcastMemberMessage)
-      connection.on("member", (data: any) => {
+      (connection as any).on("member", (data: any) => {
         handleUserActivity(data, "MEMBER_JOIN");
       });
 
       // 2. Chat message event (WebcastChatMessage) - if user chats, they are inside the live
-      connection.on("chat", (data: any) => {
+      (connection as any).on("chat", (data: any) => {
         handleUserActivity(data, "CHAT_MESSAGE");
       });
 
       // 3. Like event - if user likes the live stream
-      connection.on("like", (data: any) => {
+      (connection as any).on("like", (data: any) => {
         handleUserActivity(data, "LIKE_STREAM");
       });
 
       // Stream status listeners
-      connection.on("streamEnd", () => {
+      (connection as any).on("streamEnd", () => {
         wrapper.isLive = false;
         logSystemEvent("INFO", "WEBSOCKET", `انتهى البث المباشر للمضيف @${cleanHost}`);
       });
 
-      connection.on("error", (err: Error) => {
+      (connection as any).on("error", (err: any) => {
         logSystemEvent("WARN", "WEBSOCKET", `تنبيه في اتصال بث @${cleanHost}: ${err?.message || err}`);
       });
 

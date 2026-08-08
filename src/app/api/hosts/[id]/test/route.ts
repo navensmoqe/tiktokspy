@@ -27,9 +27,7 @@ export async function POST(
     const connection = new ConnectionClass(cleanHost, {
       processInitialData: true,
       enableExtendedGiftInfo: false,
-      enableWebsocketUpgrade: true,
-      requestPollingIntervalMs: 1000,
-    });
+    } as any);
 
     try {
       const state = await connection.connect();
