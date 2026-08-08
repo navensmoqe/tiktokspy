@@ -20,9 +20,12 @@ export default function AccountsPage() {
   const fetchAccounts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/accounts");
+      const res = await fetch(`/api/accounts?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
       const json = await res.json();
-      if (json.success) {
+      if (json.success && Array.isArray(json.data)) {
         setAccounts(json.data);
       }
     } catch (err) {

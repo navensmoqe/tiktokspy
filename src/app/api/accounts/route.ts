@@ -4,6 +4,9 @@ import { db, ensureDatabaseSchema } from "@/lib/db";
 import { cleanUsername } from "@/lib/utils";
 import { logSystemEvent } from "@/lib/logger";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const createAccountSchema = z.object({
   username: z.string().min(1).max(30),
   nickname: z.string().optional(),
@@ -21,7 +24,16 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ success: true, data: accounts });
+    return NextResponse.json(
+      { success: true, data: accounts },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
@@ -30,6 +42,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabaseSchema();
     const body = await req.json();
     const parsed = createAccountSchema.safeParse(body);
 
@@ -63,7 +76,15 @@ export async function POST(req: NextRequest) {
 
     await logSystemEvent("AUDIT", "MONITOR", `تمت إضافة الحساب @${username} لقائمة الرصد`);
 
-    return NextResponse.json({ success: true, data: account }, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: account },
+      {
+        status: 201,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
@@ -72,9 +93,17 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE() {
   try {
+    await ensureDatabaseSchema();
     const count = await db.monitoredAccount.deleteMany({});
     await logSystemEvent("AUDIT", "MONITOR", `تم مسح جميع الحسابات المراقبة (${count.count} حساب)`);
-    return NextResponse.json({ success: true, message: `تم مسح ${count.count} حساب بنجاح.` });
+    return NextResponse.json(
+      { success: true, message: `تم مسح ${count.count} حساب بنجاح.` },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });

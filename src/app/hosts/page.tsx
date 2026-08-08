@@ -17,9 +17,12 @@ export default function HostsPage() {
   const fetchHosts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/hosts");
+      const res = await fetch(`/api/hosts?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
       const json = await res.json();
-      if (json.success) {
+      if (json.success && Array.isArray(json.data)) {
         setHosts(json.data);
       }
     } catch (err) {

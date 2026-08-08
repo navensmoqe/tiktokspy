@@ -43,9 +43,9 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const [accRes, hostRes, eventRes] = await Promise.all([
-        fetch("/api/accounts"),
-        fetch("/api/hosts"),
-        fetch("/api/events?limit=10"),
+        fetch(`/api/accounts?t=${Date.now()}`, { cache: "no-store", headers: { Pragma: "no-cache" } }),
+        fetch(`/api/hosts?t=${Date.now()}`, { cache: "no-store", headers: { Pragma: "no-cache" } }),
+        fetch(`/api/events?limit=10&t=${Date.now()}`, { cache: "no-store", headers: { Pragma: "no-cache" } }),
       ]);
 
       const [accJson, hostJson, eventJson] = await Promise.all([
@@ -54,9 +54,9 @@ export default function DashboardPage() {
         eventRes.json(),
       ]);
 
-      if (accJson.success) setAccounts(accJson.data);
-      if (hostJson.success) setHosts(hostJson.data);
-      if (eventJson.success) setRecentEvents(eventJson.data);
+      if (accJson.success && Array.isArray(accJson.data)) setAccounts(accJson.data);
+      if (hostJson.success && Array.isArray(hostJson.data)) setHosts(hostJson.data);
+      if (eventJson.success && Array.isArray(eventJson.data)) setRecentEvents(eventJson.data);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {

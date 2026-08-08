@@ -5,6 +5,9 @@ import { cleanUsername } from "@/lib/utils";
 import { getMonitoringManager } from "@/services/monitoringManager";
 import { logSystemEvent } from "@/lib/logger";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const createHostSchema = z.object({
   hostUsername: z.string().min(1).max(30),
   nickname: z.string().optional(),
@@ -17,7 +20,16 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: hosts });
+    return NextResponse.json(
+      { success: true, data: hosts },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
@@ -26,16 +38,17 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabaseSchema();
     const body = await req.json();
     const parsed = createHostSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ success: false, error: parsed.error.issues[0]?.message || "Invalid input" }, { status: 400 });
+      return NextResponse.json({ success: false, error: parsed.error.issues[0]?.message || "بيانات غير صالحة" }, { status: 400 });
     }
 
     const hostUsername = cleanUsername(parsed.data.hostUsername);
     if (!hostUsername) {
-      return NextResponse.json({ success: false, error: "Host username cannot be empty" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "اسم مضيف البث لا يمكن أن يكون فارغاً" }, { status: 400 });
     }
 
     const existing = await db.targetHost.findUnique({
@@ -43,26 +56,38 @@ export async function POST(req: NextRequest) {
     });
 
     if (existing) {
-      return NextResponse.json({ success: false, error: `Host @${hostUsername} is already registered.` }, { status: 409 });
+      return NextResponse.json({ success: false, error: `مضيف البث @${hostUsername} مضاف بالفعل.` }, { status: 409 });
     }
 
     const host = await db.targetHost.create({
       data: {
         hostUsername,
         nickname: parsed.data.nickname?.trim() || hostUsername,
-        streamUrl: `https://www.tiktok.com/@${hostUsername}/live`,
-        avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${hostUsername}`,
+        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${hostUsername}`,
+        isLive: false,
         isActive: true,
       },
     });
 
-    // Register with monitoring manager
-    const manager = getMonitoringManager();
-    await manager.registerHost(hostUsername);
+    // Register into active engine
+    try {
+      const manager = getMonitoringManager();
+      await manager.registerHost(hostUsername);
+    } catch (e) {
+      console.warn("Could not immediately attach host to manager:", e);
+    }
 
-    await logSystemEvent("AUDIT", "MONITOR", `Added new target host stream @${hostUsername}`);
+    await logSystemEvent("AUDIT", "MONITOR", `تمت إضافة مضيف البث @${hostUsername} للرادار`);
 
-    return NextResponse.json({ success: true, data: host }, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: host },
+      {
+        status: 201,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
