@@ -1,0 +1,109 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model MonitoredAccount {
+  id               String      @id @default(uuid())
+  username         String      @unique
+  nickname         String?
+  avatarUrl        String?
+  status           String      @default("MONITORING") // MONITORING, LIVE_DETECTED, IDLE, UNKNOWN
+  isActive         Boolean     @default(true)
+  lastCheckedAt    DateTime?
+  lastDetectedAt   DateTime?
+  currentHost      String?
+  currentLiveUrl   String?
+  currentLiveTitle String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  liveEvents       LiveEvent[]
+
+  @@index([username])
+  @@index([status])
+  @@index([isActive])
+}
+
+model TargetHost {
+  id            String    @id @default(uuid())
+  hostUsername  String    @unique
+  nickname      String?
+  avatarUrl     String?
+  isLive        Boolean   @default(false)
+  currentTitle  String?
+  viewerCount   Int       @default(0)
+  streamUrl     String?
+  isActive      Boolean   @default(true)
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([hostUsername])
+  @@index([isActive])
+  @@index([isLive])
+}
+
+model LiveEvent {
+  id                 String            @id @default(uuid())
+  monitoredAccountId String
+  monitoredAccount   MonitoredAccount  @relation(fields: [monitoredAccountId], references: [id], onDelete: Cascade)
+  monitoredUsername  String
+  hostUsername       String
+  liveTitle          String?
+  liveUrl            String
+  detectedAt         DateTime          @default(now())
+  exitAt             DateTime?
+  durationSeconds    Int?
+  detectionSource    String            @default("WEBCAST_ROOM") // WEBCAST_ROOM, SIMULATION, API_RELAY
+  metadataJson       String?
+  createdAt          DateTime          @default(now())
+
+  notifications      Notification[]
+
+  @@index([monitoredAccountId])
+  @@index([monitoredUsername])
+  @@index([hostUsername])
+  @@index([detectedAt])
+}
+
+model Notification {
+  id          String     @id @default(uuid())
+  liveEventId String?
+  liveEvent   LiveEvent? @relation(fields: [liveEventId], references: [id], onDelete: SetNull)
+  title       String
+  message     String
+  type        String     @default("LIVE_DETECTED") // LIVE_DETECTED, STATUS_CHANGE, SYSTEM_ALERT
+  isRead      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model SystemLog {
+  id          String   @id @default(uuid())
+  level       String   @default("INFO") // INFO, WARN, ERROR, AUDIT
+  category    String   @default("GENERAL") // MONITOR, WEBSOCKET, SSE, AUTH, DATABASE
+  message     String
+  detailsJson String?
+  createdAt   DateTime @default(now())
+
+  @@index([level])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model AppSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
