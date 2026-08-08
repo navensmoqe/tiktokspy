@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Sparkles,
   Key,
+  Clock,
 } from "lucide-react";
 import { SystemLogDTO } from "@/types";
 import { formatDate } from "@/lib/utils";
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const [soundType, setSoundType] = useState("radar");
   const [soundVolume, setSoundVolume] = useState(80);
   const [autoDismiss, setAutoDismiss] = useState(12);
+  const [inactivityTimeout, setInactivityTimeout] = useState(60);
   const [streamProvider, setStreamProvider] = useState("auto");
   const [signApiKey, setSignApiKey] = useState("");
   const [signBasePath, setSignBasePath] = useState("");
@@ -44,6 +46,7 @@ export default function SettingsPage() {
         setSoundType(json.data.soundType ?? "radar");
         setSoundVolume(json.data.soundVolume ?? 80);
         setAutoDismiss(json.data.autoDismissSeconds ?? 12);
+        setInactivityTimeout(json.data.inactivityTimeoutSeconds ?? 60);
         setStreamProvider(json.data.streamProvider ?? "auto");
         setSignApiKey(json.data.signApiKey ?? "");
         setSignBasePath(json.data.signBasePath ?? "");
@@ -89,6 +92,7 @@ export default function SettingsPage() {
           soundType,
           soundVolume,
           autoDismissSeconds: autoDismiss,
+          inactivityTimeoutSeconds: inactivityTimeout,
           streamProvider,
           signApiKey,
           signBasePath,
@@ -110,10 +114,10 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <SettingsIcon className="w-7 h-7 text-tiktok-cyan" />
-            <span>الإعدادات ومزودات الاتصال</span>
+            <span>الإعدادات وحساب مدة البقاء والخروج</span>
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
-            تخصيص نغمات التنبيه الصوتية، فترات الإشعار، إعدادات توقيع حزم البث، وعرض سجلات النظام.
+            تخصيص نغمات التنبيه الصوتية، فترات رصد الخروج، مفاتيح التوقيع، وعرض سجلات النظام.
           </p>
         </div>
 
@@ -226,40 +230,56 @@ export default function SettingsPage() {
           </div>
         </Card>
 
-        {/* Engine & Provider Config */}
+        {/* Departure & Engine Config */}
         <Card variant="default" className="space-y-5 text-right">
           <CardHeader className="pb-3">
             <CardTitle>
-              <Sliders className="w-4 h-4 text-purple-400" />
-              <span>محرك Webcast ومفتاح التوقيع (Sign Server)</span>
+              <Clock className="w-4 h-4 text-purple-400" />
+              <span>دقة احتساب وقت الخروج والمدة (Exit Tracker)</span>
             </CardTitle>
           </CardHeader>
 
-          <div className="space-y-3">
+          {/* Inactivity Exit Window */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-zinc-300">
+              مهلة التحقق من مغادرة البث (Exit Timeout)
+            </label>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              إذا لم يرسل المشاهد أي نشاط جديد (تفاعل، رسالة، أو بقاء) خلال هذه المدة، يقوم النظام باحتساب وقت خروجه الدقيق وإعادة حالته إلى "قيد المراقبة":
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {[
+                { sec: 30, label: "30 ثانية (فوري فائق السرعة)" },
+                { sec: 60, label: "60 ثانية (الافتراضي المتوازن)" },
+                { sec: 90, label: "90 ثانية (دقيق)" },
+                { sec: 120, label: "دقيقتان (بثوث هادئة)" },
+              ].map((opt) => (
+                <button
+                  key={opt.sec}
+                  type="button"
+                  onClick={() => setInactivityTimeout(opt.sec)}
+                  className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-right ${
+                    inactivityTimeout === opt.sec
+                      ? "bg-purple-500/10 text-purple-300 border-purple-500/40"
+                      : "bg-[#12141e] text-zinc-400 border-zinc-800 hover:border-zinc-700"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-3 border-t border-zinc-800">
             <div className="space-y-1">
               <label className="block text-xs font-bold text-zinc-300 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-tiktok-cyan" />
                 <span>مفتاح توقيع البث (EulerStream Sign API Key):</span>
               </label>
-              <p className="text-[11px] text-zinc-400">
-                تفرض تيك توك توقيعاً مشفراً للاتصال بغرف البث المباشر. يمكنك استخدام مفتاح من مزود التوقيع (مثل <a href="https://eulerstream.com" target="_blank" rel="noreferrer" className="text-tiktok-cyan underline">EulerStream</a> أو خادمك الخاص).
-              </p>
               <Input
                 value={signApiKey}
                 onChange={(e) => setSignApiKey(e.target.value)}
                 placeholder="أدخل Sign API Key إن وجد (اختياري)..."
-                dir="ltr"
-              />
-            </div>
-
-            <div className="space-y-1 pt-2 border-t border-zinc-800">
-              <label className="block text-xs font-bold text-zinc-300">
-                رابط خادم التوقيع المخصص (Custom Sign Base Path):
-              </label>
-              <Input
-                value={signBasePath}
-                onChange={(e) => setSignBasePath(e.target.value)}
-                placeholder="https://your-custom-sign-server.com (اختياري)"
                 dir="ltr"
               />
             </div>
@@ -268,10 +288,10 @@ export default function SettingsPage() {
           <div className="p-4 rounded-xl bg-[#10121a] border border-zinc-800 space-y-2 text-xs text-zinc-400">
             <div className="flex items-center gap-2 font-bold text-white">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>أمان تام وبدون كلمات مرور</span>
+              <span>دقة زمنية متناهية بالثواني</span>
             </div>
             <p className="text-[11px] text-zinc-400 leading-relaxed">
-              لا يطلب النظام أي كلمات مرور أو رموز تسجيل دخول خاصة بالمستخدمين، ويعتمد على معالجة حزم غرف البث العامة مباشرة.
+              يقوم متتبع الجلسات بحساب لحظة المغادرة الفعلية اعتماداً على آخر نبضة حضور مسجلة في الغرفة، مما يضمن دقة 100% في سجل الأحداث ومدة المشاهدة.
             </p>
           </div>
         </Card>
