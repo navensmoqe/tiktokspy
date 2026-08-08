@@ -7,9 +7,10 @@ import {
   Bell,
   Volume2,
   VolumeX,
-  AlertCircle,
   PlayCircle,
   Menu,
+  Smartphone,
+  CheckCircle2,
 } from "lucide-react";
 import { audioAlert } from "@/components/ui/AudioAlertController";
 import { BrowserNotificationHelper } from "@/components/ui/BrowserNotificationHelper";
@@ -33,7 +34,7 @@ export function Navbar({
   const [notifPermission, setNotifPermission] = useState<string>("default");
 
   useEffect(() => {
-    if (BrowserNotificationHelper.isSupported()) {
+    if (BrowserNotificationHelper.isSupported() && typeof Notification !== "undefined") {
       setNotifPermission(Notification.permission);
     }
   }, []);
@@ -49,6 +50,11 @@ export function Navbar({
   const handleRequestNotifPermission = async () => {
     const granted = await BrowserNotificationHelper.requestPermission();
     setNotifPermission(granted ? "granted" : "denied");
+    if (granted) {
+      await BrowserNotificationHelper.send("🟢 تم تفعيل إشعارات الهاتف بنجاح!", {
+        body: "ستتلقى تنبيهاً فورياً عند دخول أي حساب مراقب إلى بث مباشر على تيك توك.",
+      });
+    }
   };
 
   return (
@@ -58,8 +64,8 @@ export function Navbar({
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleSidebar}
-            className="md:hidden p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
-            title="القائمة"
+            className="md:hidden p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            aria-label="القائمة الجانبية"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -73,7 +79,7 @@ export function Navbar({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base tracking-tight text-white group-hover:text-tiktok-cyan transition-colors">
-                  رادار تيك توك <span className="text-tiktok-red">لايف</span>
+                  رادار تيك توك <span className="text-tiktok-red">LIVE</span>
                 </span>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-tiktok-cyan/10 text-tiktok-cyan border border-tiktok-cyan/20 font-mono">
                   PRO
@@ -132,14 +138,28 @@ export function Navbar({
             {soundEnabled ? <Volume2 className="w-4 h-4 text-tiktok-cyan" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
-          {/* Desktop Push Notifications Permission Button */}
-          {notifPermission !== "granted" && (
+          {/* Mobile & Chrome Push Notification Button */}
+          {notifPermission !== "granted" ? (
             <button
               onClick={handleRequestNotifPermission}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-all shadow-sm animate-pulse"
+              title="تفعيل إشعارات متصفح كروم على هاتفك"
             >
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-              <span>تفعيل إشعارات المتصفح</span>
+              <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+              <span>إشعارات الهاتف</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                BrowserNotificationHelper.send("🔴 تجربة إشعار تيك توك", {
+                  body: "إشعارات كروم على الهاتف تعمل بنجاح مع الاهتزاز والصوت 📳",
+                });
+              }}
+              className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+              title="اضغط لإرسال إشعار تجريبي للهاتف"
+            >
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <span>إشعارات الهاتف مفعلة</span>
             </button>
           )}
 

@@ -217,26 +217,30 @@ export default function SimulationPage() {
             ))}
           </div>
 
-          <div className="pt-4 border-t border-zinc-800 space-y-2">
+          <div className="pt-4 border-t border-zinc-800 space-y-3">
             <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
               <Bell className="w-4 h-4 text-amber-400" />
-              <span>اختبار إشعار المتصفح (Desktop Push)</span>
+              <span>اختبار إشعارات الهاتف وجوجل كروم (Chrome Mobile Push)</span>
             </h4>
-            <p className="text-xs text-zinc-400">
-              إرسال إشعار تجريبي للتأكد من ظهور النوافذ المنبثقة على سطح المكتب:
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              إرسال إشعار فوري مباشر إلى شاشة هاتفك مع اهتزاز الجهاز ونغمة التنبيه عبر متصفح Google Chrome:
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                BrowserNotificationHelper.send("🔴 تنبيه تجريبي - رادار تيك توك", {
-                  body: "تم التحقق من استقبال إشعارات سطح المكتب بنجاح.",
-                });
-              }}
-              className="text-xs font-bold"
-            >
-              إرسال إشعار تجريبي للكمبيوتر
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="cyan"
+                size="sm"
+                onClick={async () => {
+                  await BrowserNotificationHelper.send("🔴 تنبيه مباشر: حسابك دخل البث الآن!", {
+                    body: "المستخدم @sumer22085 دخل بث مباشر على تيك توك 📲",
+                    url: "https://www.tiktok.com",
+                  });
+                }}
+                className="text-xs font-bold gap-1.5 shadow-tiktok-cyan/20"
+              >
+                <Bell className="w-3.5 h-3.5 ml-1" />
+                <span>إرسال إشعار فوري لهاتفي الآن</span>
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

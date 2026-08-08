@@ -69,9 +69,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             // Play synthesized audio chime
             audioAlert.playSound("radar", 80);
 
-            // Send desktop browser notification
-            BrowserNotificationHelper.send(`🔴 LIVE Activity Detected!`, {
-              body: `@${ev.monitoredUsername} entered a LIVE stream hosted by @${ev.hostUsername}`,
+            // Send Chrome Mobile & Desktop push notification
+            BrowserNotificationHelper.send(`🔴 تم رصد نشاط مباشر (تيك توك)`, {
+              body: `المستخدم @${ev.monitoredUsername} دخل الآن بث مباشر للمضيف @${ev.hostUsername}`,
+              url: ev.liveUrl || `https://www.tiktok.com/@${ev.hostUsername}/live`,
               tag: `live-${ev.id}`,
             });
 

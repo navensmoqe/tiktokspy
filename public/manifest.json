@@ -1,0 +1,24 @@
+{
+  "name": "رادار تيك توك لايف | TikTok Live Radar",
+  "short_name": "رادار تيك توك",
+  "description": "منصة فورية لرصد دخول الحسابات إلى غرف البث المباشر على تيك توك",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12141d",
+  "theme_color": "#fe2c55",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=tiktokradar",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=tiktokradar",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

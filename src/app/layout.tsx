@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "رادار تيك توك لايف | مراقبة ورصد دخول المشاهدين للبث المباشر",
   description:
     "نظام احترافي لمراقبة حسابات تيك توك المحددة ورصد لحظة دخولها كمشاهدين إلى أي بث مباشر (TikTok LIVE) في الوقت الفعلي مع إشعارات وتنبيهات صوتية فورية.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
