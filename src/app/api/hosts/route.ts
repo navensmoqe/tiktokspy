@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db, ensureDatabaseSchema } from "@/lib/db";
 import { cleanUsername } from "@/lib/utils";
-import { getMonitoringManager } from "@/services/monitoringManager";
 import { logSystemEvent } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -68,14 +67,6 @@ export async function POST(req: NextRequest) {
         isActive: true,
       },
     });
-
-    // Register into active engine
-    try {
-      const manager = getMonitoringManager();
-      await manager.registerHost(hostUsername);
-    } catch (e) {
-      console.warn("Could not immediately attach host to manager:", e);
-    }
 
     await logSystemEvent("AUDIT", "MONITOR", `تمت إضافة مضيف البث @${hostUsername} للرادار`);
 

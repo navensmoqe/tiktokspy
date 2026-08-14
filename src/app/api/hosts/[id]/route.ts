@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getMonitoringManager } from "@/services/monitoringManager";
 import { logSystemEvent } from "@/lib/logger";
 
 const updateHostSchema = z.object({
@@ -25,15 +24,6 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       data: parsed.data,
     });
 
-    const manager = getMonitoringManager();
-    if (parsed.data.isActive !== undefined) {
-      if (parsed.data.isActive) {
-        await manager.registerHost(host.hostUsername);
-      } else {
-        await manager.unregisterHost(host.hostUsername);
-      }
-    }
-
     await logSystemEvent("AUDIT", "MONITOR", `Updated target host @${host.hostUsername}`);
 
     return NextResponse.json({ success: true, data: host });
@@ -53,9 +43,6 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     if (!host) {
       return NextResponse.json({ success: false, error: "Host not found" }, { status: 404 });
     }
-
-    const manager = getMonitoringManager();
-    await manager.unregisterHost(host.hostUsername);
 
     await db.targetHost.delete({
       where: { id },

@@ -1,14 +1,10 @@
 import { NextRequest } from "next/server";
 import { subscribeRealtimeEvents } from "@/lib/eventBus";
-import { getMonitoringManager } from "@/services/monitoringManager";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  // Ensure manager is initialized
-  getMonitoringManager();
-
   const responseStream = new TransformStream();
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
