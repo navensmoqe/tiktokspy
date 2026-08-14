@@ -346,9 +346,9 @@ export class MonitoringManager {
         }
       );
 
-      // 4. Emit VIEWER_EXITED SSE event
+      // 4. Emit ACCOUNT_STATUS_CHANGE SSE event
       emitRealtimeEvent({
-        type: "STATUS_CHANGE",
+        type: "ACCOUNT_STATUS_CHANGE",
         timestamp: new Date().toISOString(),
         data: {
           accountId: session.accountId,

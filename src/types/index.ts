@@ -74,7 +74,13 @@ export interface SystemLogDTO {
 }
 
 export interface RealtimeEventPayload {
-  type: 'LIVE_DETECTED' | 'HOST_STATUS_CHANGE' | 'ACCOUNT_STATUS_CHANGE' | 'HEARTBEAT' | 'NOTIFICATION';
+  type:
+    | 'LIVE_DETECTED'
+    | 'HOST_STATUS_CHANGE'
+    | 'ACCOUNT_STATUS_CHANGE'
+    | 'VIEWER_EXITED'
+    | 'HEARTBEAT'
+    | 'NOTIFICATION';
   timestamp: string;
   data: {
     event?: LiveEventDTO;
@@ -82,6 +88,7 @@ export interface RealtimeEventPayload {
     host?: Partial<TargetHostDTO>;
     notification?: NotificationDTO;
     message?: string;
+    [key: string]: any;
   };
 }
 
